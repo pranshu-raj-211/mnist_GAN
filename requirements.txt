@@ -2,4 +2,4 @@ fastapi
 gunicorn
 uvicorn
 tensorflow
-pillow
+Pillow
