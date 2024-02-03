@@ -2,12 +2,11 @@
 Code for web application and prediction."""
 
 import io
-import os
 import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from tensorflow.keras.models import load_model
+from tensorflow import keras
 import numpy as np
 from PIL import Image
 
@@ -15,7 +14,7 @@ from PIL import Image
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-model = load_model("models/mnist_generator.h5")
+model = keras.models.load_model("models/mnist_generator.h5")
 LATENT_DIM = 128
 np.random.seed(42)
 logging.basicConfig(
