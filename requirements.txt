@@ -3,3 +3,5 @@ gunicorn
 uvicorn
 tensorflow
 Pillow
+pyyaml
+h5py
