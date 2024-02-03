@@ -1,4 +1,8 @@
+"""
+Code for web application and prediction."""
+
 import io
+import os
 import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, HTMLResponse
@@ -11,7 +15,7 @@ from PIL import Image
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-model = load_model("mnist_generator.h5")
+model = load_model("models/mnist_generator.h5")
 LATENT_DIM = 128
 np.random.seed(42)
 logging.basicConfig(
