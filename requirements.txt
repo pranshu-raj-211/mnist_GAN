@@ -5,3 +5,4 @@ tensorflow
 Pillow
 pyyaml
 h5py
+jinja2
