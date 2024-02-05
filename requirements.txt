@@ -1,7 +1,7 @@
 fastapi
 gunicorn
 uvicorn
-tensorflow = 2.13.0
+tensorflow == 2.13.0
 Pillow
 pyyaml
 h5py
