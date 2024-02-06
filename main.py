@@ -1,20 +1,17 @@
 """
-Code for web application and prediction."""
+Code for web application and prediction.
+"""
 
 import io
 import logging
-from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
-from tensorflow import keras
 import numpy as np
+from flask import Flask, send_file, render_template
+from tensorflow import keras
+
 from PIL import Image
 
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
-model = keras.models.load_model("models/mnist_generator.h5")
+app = Flask(__name__)
+model = keras.models.load_model("models/mnist_generator.h5", compile=False)
 LATENT_DIM = 128
 np.random.seed(42)
 logging.basicConfig(
@@ -24,26 +21,29 @@ logging.basicConfig(
 )
 
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
+@app.route("/", methods=["GET"])
+def read_root():
     """
-    Home page"""
-    return templates.TemplateResponse("predict.html", {"request": request})
+    Home page
+    """
+    return render_template("predict.html")
 
 
 def sample_noise(n_samples: int, latent_dim: int):
     """
-    Samples noise in the shape of (n_samples, latent_dim)."""
+    Samples noise in the shape of (n_samples, latent_dim).
+    """
     return np.random.rand(n_samples * latent_dim)
 
 
-@app.post("/predict/")
-async def predict():
+@app.route("/predict/", methods=["POST"])
+def predict():
     """
     Returns a generated image from the model.
 
     Samples noise from a normal distribution and passes it through the
-    generator model to get a generated image."""
+    generator model to get a generated image.
+    """
     input_noise = sample_noise(1, LATENT_DIM).reshape((1, LATENT_DIM))
     prediction = model.predict(input_noise) * 255
     logging.info("Got predictions array")
@@ -57,4 +57,8 @@ async def predict():
     img_buffer.seek(0)
 
     # Return the binary image data directly
-    return StreamingResponse(img_buffer, media_type="image/jpeg")
+    return send_file(img_buffer, mimetype="image/jpeg")
+
+
+if __name__ == "__main__":
+    app.run(debug=False)
