@@ -60,5 +60,5 @@ def predict():
     return send_file(img_buffer, mimetype="image/jpeg")
 
 
-if __name__ == "__main__":
-    app.run(debug=False)
+# if __name__ == "__main__":
+#     app.run(debug=False)
