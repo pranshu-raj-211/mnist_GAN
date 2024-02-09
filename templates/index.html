@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h2>Image from Flask API</h2>
+
+        <button onclick="getPrediction()">Get Prediction</button>
+
+        <img id="outputImage" src="" alt="Image" />
+
+        <style>
+            img {
+            width: 300px;
+            height: 300px;
+            }
+        </style>
+
+        <script>
+            function getPrediction() {
+            // Replace this URL with the URL of your Flask API
+            var url = "http://localhost:5000/predict";
+
+            // Send a POST request to the Flask API
+            fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                // Get the base64 image from the response
+                var imgBase64 = data["image"];
+
+                // Set the source of the image to the base64 string
+                document.getElementById("outputImage").src =
+                "data:image/png;base64," + imgBase64;
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+            }
+        </script>
+    </body>
+</html>
