@@ -1,19 +1,23 @@
 """
 Client interface for GAN model"""
 
+import os
 import logging
-import base64
 import io
+import base64
 import json
+import requests
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template
 from flask_cors import cross_origin
-import requests
 import numpy as np
 import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.INFO)
 LATENT_DIM = 128
 app = Flask(__name__)
+load_dotenv()
+URL = os.getenv("CLOUD_RUN_URL")
 
 
 @app.route("/")
@@ -23,36 +27,33 @@ def home():
     return render_template("index.html")
 
 
+def get_data():
+    '''
+    Fetch data from the cloud run service and return it as a numpy array.'''
+    response = requests.get(URL, timeout=200)
+    if response.status_code == 200:
+        lines = response.text.splitlines()
+        data_sample = [json.loads(line) for line in lines]
+        return np.array(data_sample)
+    else:
+        print("Request failed with status code", response.status_code)
+        return None
+
 @app.route("/predict", methods=["POST"])
 @cross_origin()
 def predict():
     """
     Prediction Endpoint"""
     logging.info("Request Received, predicting ...")
-    input_data = np.random.rand(1, LATENT_DIM).tolist()
+    predictions = get_data().reshape(28, 28)
+    if predictions is not None:
+        img_io = io.BytesIO()
 
-    data = {
-        "signature_name": "serving_default",
-        "instances": input_data,
-    }
-    data = json.dumps(data)
-
-    headers = {"content-type": "application/json"}
-    json_response = requests.post(
-        "http://localhost:8501/v1/models/my_model:predict",
-        data=data,
-        headers=headers,
-        timeout=60,
-    )
-
-    predictions = json.loads(json_response.text)["predictions"]
-    predictions = np.array(predictions)
-    predictions = predictions.reshape((28, 28))
-    img_io = io.BytesIO()
-
-    plt.imsave(img_io, predictions, cmap="gray", format="png")
-    img_base64 = base64.b64encode(img_io.getvalue()).decode("utf-8")
-    return jsonify({"image": img_base64})
+        plt.imsave(img_io, predictions, cmap="gray", format="png")
+        img_base64 = base64.b64encode(img_io.getvalue()).decode("utf-8")
+        logging.info("Done")
+        return jsonify({"image": img_base64})
+    return jsonify({"error": "Failed to get predictions"})
 
 
 if __name__ == "__main__":
