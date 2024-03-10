@@ -39,13 +39,14 @@ def predict():
 
     headers = {"content-type": "application/json"}
     json_response = requests.post(
-        "http://localhost:8501/v1/models/my_model:predict",
+        "http://aci-gan.huddbgcnddd7bugn.eastus.azurecontainer.io:8501/v1/models/my_model:predict",
         data=data,
         headers=headers,
         timeout=60,
     )
 
     predictions = json.loads(json_response.text)["predictions"]
+    logging.info('Received predictions, displaying ...')
     predictions = np.array(predictions)
     predictions = predictions.reshape((28, 28))
     img_io = io.BytesIO()
